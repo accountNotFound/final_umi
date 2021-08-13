@@ -1,6 +1,6 @@
 import { Tabs, Input, Button, Row, Col } from 'antd';
 import Graph from './components/Graph';
-import TreeDetail from './components/TreeDetail';
+// import TreeDetail from './components/TreeDetail';
 
 const { TabPane } = Tabs;
 
@@ -22,14 +22,14 @@ function Overiew() {
             <Col span={20}>
               <Graph />
             </Col>
-            <Col span={4}>
+            {/* <Col span={4}>
               <TreeDetail />
-            </Col>
+            </Col> */}
           </Row>
         </TabPane>
-        <TabPane tab='知识图谱' key='knowledge' >
+        {/* <TabPane tab='知识图谱' key='knowledge' >
 
-        </TabPane>
+        </TabPane> */}
       </Tabs>
     </>
 

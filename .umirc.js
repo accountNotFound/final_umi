@@ -20,7 +20,7 @@ export default {
       antd: true,
       dva: false,
       dynamicImport: false,
-      title: 'learn_umi',
+      title: 'dev_umi',
       dll: false,
 
       routes: {
