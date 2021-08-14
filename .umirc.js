@@ -20,7 +20,7 @@ export default {
       antd: true,
       dva: false,
       dynamicImport: false,
-      title: 'dev_umi',
+      title: 'final_umi',
       dll: false,
 
       routes: {
@@ -30,4 +30,13 @@ export default {
       },
     }],
   ],
+  proxy: {
+    '/api': {
+      target: 'http://127.0.0.1:8080',
+      changeOrigin: true,
+      pathRewrite: {
+        '^/api': ''
+      }
+    }
+  }
 }
