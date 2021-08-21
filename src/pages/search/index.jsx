@@ -17,29 +17,42 @@ function Search() {
   const [pageSize, setPageSize] = useState(10);
   const [totalSize, setTotalSize] = useState(0);
 
-  const handlePageChange = (currentPage, pageSize) => {
-
+  const renderHighlight = text => {
+    const keys = formData.query_str.split(' ');
+    keys.forEach(k => {
+      text = text.replaceAll(k, `<mark style="background-color: #58D3F7">${k}</mark>`);
+    });
+    return text;
   };
 
-  const onFinish = value => {
+  const submitQuery = (value, page_from, page_size) => {
     const data = {
       ...value,
-      page_from: 1,
-      page_size: 10,
+      page_from,
+      page_size
     };
     setLoading(true);
     Service.getAbsQueries(data).then(res => {
-      console.log(res);
       if (res.code === 0) {
         setDataSource(res.data.items);
         setTotalSize(res.data.total_size);
-        setFormData({ ...value });
+        setCurrentPage(page_from);
+        setPageSize(page_size);
         setLoading(false);
       } else {
         message.error(res.message);
         setLoading(false);
       }
     });
+  };
+
+  const handlePageChange = (currentPage, pageSize) => {
+    submitQuery(formData, currentPage, pageSize);
+  };
+
+  const onFinish = value => {
+    setFormData(value);
+    submitQuery(value, 1, 10);
   };
 
   return (
@@ -108,7 +121,7 @@ function Search() {
                       actions={[<a>详情</a>]}
                     >
                       <List.Item.Meta
-                        title={item.text}
+                        title={<p dangerouslySetInnerHTML={{ __html: renderHighlight(item.text) }} />}
                         description={item.title}
                       />
                     </List.Item>
@@ -117,6 +130,7 @@ function Search() {
                 <Pagination
                   style={{ minWidth: 600 }}
                   defaultCurrent={currentPage}
+                  defaultPageSize={pageSize}
                   total={totalSize}
                   showSizeChanger={true}
                   showQuickJumper={true}
