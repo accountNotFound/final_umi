@@ -2,18 +2,26 @@
 // ref: https://umijs.org/config/
 export default {
   treeShaking: true,
-  routes: [
-    {
-      path: '/',
-      component: '../layouts/index',
-      routes: [
-        { path: '/', component: '../pages/index' },
-        { path: '/overview', component: '../pages/overview/index' },
-        { path: '/search', component: '../pages/search/index' },
-        { path: '/monitor', component: '../pages/monitor/index' },
-      ]
-    }
-  ],
+  // routes: [
+  //   {
+  //     path: '/',
+  //     component: '../layouts',
+  //     routes: [
+  //       {
+  //         path: '/', component: 'overview'
+  //       },
+  //       {
+  //         path: 'overview', component: 'overview'
+  //       },
+  //       {
+  //         path: 'search', component: 'search',
+  //       },
+  //       {
+  //         path: 'monitor', component: 'monitor'
+  //       },
+  //     ]
+  //   }
+  // ],
   plugins: [
     // ref: https://umijs.org/plugin/umi-plugin-react.html
     ['umi-plugin-react', {
