@@ -2,8 +2,9 @@ import {
   Input, Button, Row, Col, Form,
   Spin, Pagination, Select, Space, List, Empty, message
 } from 'antd';
+import Link from 'umi/link';
 import { useState } from 'react';
-import * as Service from '../../service/search';
+import { getAbsQueries } from '../../service/search';
 
 const { Option } = Select;
 
@@ -17,7 +18,7 @@ function Search() {
   const [pageSize, setPageSize] = useState(10);
   const [totalSize, setTotalSize] = useState(0);
 
-  const renderHighlight = text => {
+  const markHtml = text => {
     const keys = formData.query_str.split(' ');
     keys.forEach(k => {
       text = text.replaceAll(k, `<mark style="background-color: #58D3F7">${k}</mark>`);
@@ -32,7 +33,7 @@ function Search() {
       page_size
     };
     setLoading(true);
-    Service.getAbsQueries(data).then(res => {
+    getAbsQueries(data).then(res => {
       if (res.code === 0) {
         setDataSource(res.data.items);
         setTotalSize(res.data.total_size);
@@ -114,14 +115,29 @@ function Search() {
               <>
                 <List
                   style={{ minHeight: 350, minWidth: 1000 }}
-                  itemLayout="horizontal"
+                  itemLayout='horizontal'
                   dataSource={dataSource}
                   renderItem={item => (
                     <List.Item
-                      actions={[<a>详情</a>]}
+                      actions={
+                        [
+                          <Link
+                            to={{
+                              pathname: `/search/${item.id}`,
+                              state: {
+                                id: item.id,
+                                title: item.title,
+                                sourceType
+                              }
+                            }}
+                          >
+                            详情
+                          </Link>
+                        ]
+                      }
                     >
                       <List.Item.Meta
-                        title={<p dangerouslySetInnerHTML={{ __html: renderHighlight(item.text) }} />}
+                        title={<p dangerouslySetInnerHTML={{ __html: markHtml(item.text) }} />}
                         description={item.title}
                       />
                     </List.Item>

@@ -11,16 +11,19 @@ import {
 
 const { Header, Sider, Content } = Layout;
 
-
 function BasicLayout(props) {
   const [collapsed, setCollapsed] = useState(false);
+  const currentKey = props.location.pathname.slice(1);
 
   return (
     <Layout>
       <Sider collapsed={collapsed}>
-        <Menu theme="dark" mode="inline" multiple={false} defaultSelectedKeys={['overview']}>
+        <Menu
+          theme='dark'
+          mode='inline'
+          multiple={false} defaultSelectedKeys={[currentKey || 'overview']}
+        >
           <Menu.Item key='defalut'>
-
           </Menu.Item>
           <Menu.Item key='overview' icon={<AppstoreOutlined />}>
             <Link to={{ pathname: '/overview' }}>
@@ -49,7 +52,7 @@ function BasicLayout(props) {
               })}
             </Col>
             <Col span={8}>
-              <Row justify="center">
+              <Row justify='center'>
                 <h2>知识库系统</h2>
               </Row>
             </Col>
