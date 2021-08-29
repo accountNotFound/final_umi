@@ -1,92 +1,61 @@
 import { useEffect, useState } from 'react';
-import { Tree, Row, Spin, message } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
-import { getTreeDoc } from '../../../service/search';
+import {
+  Row, Form, Space, Col, Input, Button
+} from 'antd';
+import SearchList from '../components/SearchList';
+import SearchTree from '../components/searchTree';
 
 function SearchDetail(props) {
   const { id: currentID, title, sourceType } = props.location.state;
-  const [parentPath, setParentPath] = useState(currentID.split('-').slice(0, -1));
-  const [treeData, setTreeData] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const buildTree = (data) => {
-    let i = 0;
-    const dfs = () => {
-      let res = [];
-      while (i < data.length) {
-        const last = res.length - 1;
-        const d1 = data[i].id.split('-').length;
-        const d2 = last >= 0 ? res[last].key.split('-').length : d1;
-        if (d1 === d2) {
-          res.push({
-            key: data[i].id,
-            title: data[i].id === currentID
-              ? (
-                <mark style={{ background: '#58D3F7' }}>
-                  {data[i].text}
-                </mark>
-              )
-              : data[i].text
-          });
-          i++;
-        } else if (d1 > d2) {
-          res[res.length - 1].children = [...dfs()];
-        } else {
-          break;
-        }
-      }
-      return res;
-    }
-    return dfs();
-  };
+  const metaID = currentID.split('@')[0];
+  const [mode, setMode] = useState('tree');
+  const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    const rootID = parentPath.join('-');
-    setLoading(true);
-    getTreeDoc(sourceType, rootID).then(res => {
-      if (res.code === 0) {
-        const treeData_ = buildTree(res.data);
-        setTreeData([...treeData_]);
-        setLoading(false);
-      } else {
-        message.error(res.message);
-        setLoading(false);
-      }
-    });
-  }, [parentPath]);
+    setMode('tree');
+  }, [currentID]);
 
-  const handleClick = () => {
-    if (parentPath.length > 1) {
-      setParentPath([...parentPath.slice(0, -1)]);
-    }
+  const onFinish = value => {
+    setMode('list');
+    setFormData({
+      src_type: 'specif',
+      prefix: metaID,
+      ...value
+    });
   };
 
   return (
-    <Row justify='center'>
+    <>
+      <Row justify='center'>
+        <Form onFinish={onFinish}>
+          <Space>
+            <Col>
+              <Form.Item name='query_str'>
+                <Input
+                  placeholder='搜索目标'
+                  style={{ width: 200 }}
+                />
+              </Form.Item>
+            </Col>
+            <Col>
+              <Form.Item>
+                <Button type='primary' htmlType='submit'>从文本搜索</Button>
+              </Form.Item>
+            </Col>
+          </Space>
+        </Form>
+      </Row>
+      <br />
       {
-        loading
-          ? <Spin />
-          :
-          <div style={{ minWidth: 600, maxWidth: 600 }}>
-            <Row justify='center'>
-              <h2>{title}</h2>
-            </Row>
-            {
-              parentPath.length > 1
-                ? <h4>
-                  <a onClick={handleClick}>展开父节点</a>
-                </h4>
-                : <></>
-            }
-            <Tree
-              showLine
-              switcherIcon={<DownOutlined />}
-              treeData={treeData}
-              defaultExpandedKeys={[currentID]}
-            />
-          </div>
+        mode === 'tree'
+          ? <>
+            <SearchTree currentID={currentID} title={title} sourceType={sourceType} />
+          </>
+          : <>
+            <SearchList formData={formData} />
+          </>
       }
-    </Row>
+    </>
   )
 };
 

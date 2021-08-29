@@ -3,7 +3,7 @@ import * as d3 from 'd3'
 
 function Graph(props) {
 
-  const { nodes, links } = props;
+  const { nodes, links, handleClick } = props;
 
   const drag = (simulation) => {
     const dragstarted = (event) => {
@@ -54,7 +54,9 @@ function Graph(props) {
           .id((d) => d.id)
           .distance(5)
       )
-      .force('charge', d3.forceManyBody().strength(-50))
+      .force('x', d3.forceX(height / 2))
+      .force('y', d3.forceY(width / 2))
+      .force('charge', d3.forceManyBody().strength(nodes.length > 10 ? -50 : -150))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     const svg = chart
@@ -103,21 +105,24 @@ function Graph(props) {
       .attr('r', 5)
       .on('mouseover', (e, d) => {
         if (!d.show) {
-          d3.select(`#_${d.id}`)
+          d3.select(`#text_${d.id}`)
             .text(d.name);
         }
       })
       .on('mouseout', (e, d) => {
         if (!d.show) {
-          d3.select(`#_${d.id}`).text('');
+          d3.select(`#text_${d.id}`).text('');
         }
+      })
+      .on('click', (e, d) => {
+        handleClick(d);
       });
 
     node
       .append('text')
       .attr('x', 10)
       .attr('y', '0.3em')
-      .attr('id', (d) => `_${d.id}`)
+      .attr('id', (d) => `text_${d.id}`)
       .text((d) => d.show ? d.name : '');
 
     simulation.on('tick', () => {

@@ -1,6 +1,6 @@
 import { http } from './common'
 
-export async function getAbsQueries(data) {
+export async function postAbsQueries(data) {
   return http({
     url: '/api/abs_queries',
     data: data,
@@ -8,9 +8,9 @@ export async function getAbsQueries(data) {
   });
 }
 
-export async function getTreeDoc(sourceType, id) {
+export async function getTreeDoc(sourceType, prefix) {
   return http({
-    url: `/api/tree_doc?src_type=${sourceType}&&id=${id}`,
+    url: `/api/tree_doc?src_type=${sourceType}&&prefix=${prefix}`,
     method: 'get'
   });
 }
