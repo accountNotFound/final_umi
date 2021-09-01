@@ -3,18 +3,19 @@ import {
   Form, Spin, Space, message, Tag
 } from 'antd';
 import Link from 'umi/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Graph from './components/Graph';
-import { getTopRefs, postGraphQueries } from '../../service/overview';
+import { getTopRefs, postGraphQueries, getCenterQueries } from '../../service/overview';
 
 const { TabPane } = Tabs;
 
 function Overiew() {
   const [loading, setLoading] = useState(false);
   const [currentTab, setCurrentTab] = useState('source');
-  const [currentNode, setCurrentNode] = useState({});
+  const [currentNodeRef, setCurrentNodeRef] = useState({});
   const [nodes, setNodes] = useState([]);
   const [links, setLinks] = useState([]);
+  const ref = useRef();
 
   useEffect(() => {
     setLoading(true);
@@ -31,7 +32,7 @@ function Overiew() {
   }, []);
 
   const onFinish = data => {
-    setCurrentNode({});
+    setCurrentNodeRef({});
     setLoading(true);
     postGraphQueries(data).then(res => {
       if (res.code === 0) {
@@ -50,15 +51,43 @@ function Overiew() {
     console.log(activeKey);
   };
 
-  const handleClick = data => {
-    setCurrentNode({ id: data.id, name: data.name, index: data.index });
-    data.fx = data.x;
-    data.fy = data.y;
-    // data.show = !data.show;
+  const handleChoose = nodeRef => {
+    const { nodes: simulationNodes } = ref.current.getDataRef();
+    simulationNodes.forEach(it => {
+      it.show = false;
+    });
+    nodeRef.show = true;
+    setCurrentNodeRef(nodeRef);
   };
 
   const handleExpand = () => {
+    getCenterQueries(currentNodeRef.id).then(res => {
+      if (res.code === 0) {
+        const { nodes: simulationNodes, links: simulationLinks } = ref.current.getDataRef();
+        setNodes([...merge(simulationNodes, res.data.nodes, it => it.id)]);
+        setLinks([...merge(simulationLinks, res.data.links, it => (it.source + it.target))]);
+      } else {
+        message.error(res.message);
+      }
+    });
+  };
 
+  const merge = (src, extra, genKeyFunc) => {
+    let vis = new Set();
+    src.forEach(it => {
+      const k = genKeyFunc(it);
+      if (!vis.has(k)) {
+        vis.add(k);
+      }
+    });
+    let res = [...src];
+    extra.forEach(it => {
+      const k = genKeyFunc(it);
+      if (!vis.has(k)) {
+        res.push(it);
+      }
+    });
+    return res;
   };
 
   return (
@@ -95,32 +124,32 @@ function Overiew() {
                   <Col span={20}>
                     <>
                       {
-                        currentNode.name ?
+                        currentNodeRef.name ?
                           <Row>
                             <Space>
-                              <Tag color='geekblue'>{currentNode.name}</Tag>
-                              <Button type='link' onClick={handleExpand}>更多关联</Button>
-
+                              <Tag color='geekblue'>{currentNodeRef.name}</Tag>
+                              <Button type='link' onClick={handleExpand}>
+                                展开图谱
+                              </Button>
                               <Link
                                 to={{
-                                  pathname: `/search/${currentNode.id}@`,
+                                  pathname: `/search/${currentNodeRef.id}@`,
                                   state: {
-                                    id: `${currentNode.id}@`,
-                                    title: currentNode.name,
+                                    id: `${currentNodeRef.id}@`,
+                                    title: currentNodeRef.name,
                                     sourceType: 'specif'
                                   }
                                 }}
                               >
-                                详情
+                                文档详情
                               </Link>
-
                             </Space>
                           </Row>
                           :
                           <></>
                       }
                     </>
-                    <Graph nodes={nodes} links={links} handleClick={handleClick} />
+                    <Graph nodes={nodes} links={links} handleChoose={handleChoose} ref={ref} />
                   </Col>
                 </>
             }

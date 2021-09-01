@@ -73,7 +73,7 @@ function SearchTree(props) {
               <h2>{title}</h2>
             </Row>
             {
-              rootPath.length >= 1
+              rootPath.length > 1
                 ?
                 <Button type='link' onClick={handleClick}>展开父节点</Button>
                 : <></>

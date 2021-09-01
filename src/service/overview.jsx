@@ -14,3 +14,10 @@ export async function postGraphQueries(data) {
     method: 'post',
   })
 }
+
+export async function getCenterQueries(node_id) {
+  return http({
+    url: `/api/center_queries?node_id=${node_id}`,
+    method: 'get',
+  });
+}

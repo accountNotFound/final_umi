@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useImperativeHandle, forwardRef } from 'react';
 import * as d3 from 'd3'
 
-function Graph(props) {
+function Graph(props, ref) {
 
-  const { nodes, links, handleClick } = props;
+  const { nodes, links, handleChoose } = props;
+  var simulationRef = null;
 
   const drag = (simulation) => {
     const dragstarted = (event) => {
@@ -115,7 +116,9 @@ function Graph(props) {
         }
       })
       .on('click', (e, d) => {
-        handleClick(d);
+        d.fx = d.x;
+        d.fy = d.y;
+        handleChoose(d);
       });
 
     node
@@ -136,10 +139,20 @@ function Graph(props) {
       });
       node.attr('transform', (d) => `translate(${d.x},${d.y})`);
     });
+
+    return simulation;
   };
 
   useEffect(() => {
-    drawChart();
+    simulationRef = drawChart();
+  });
+
+  useImperativeHandle(ref, () => {
+    return {
+      getDataRef: () => {
+        return { nodes: simulationRef.nodes(), links: links };
+      }
+    };
   });
 
   return (
@@ -147,4 +160,4 @@ function Graph(props) {
   );
 };
 
-export default Graph;
+export default forwardRef(Graph);
