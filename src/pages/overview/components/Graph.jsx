@@ -3,7 +3,7 @@ import * as d3 from 'd3'
 
 function Graph(props, ref) {
 
-  const { nodes, links, handleChoose } = props;
+  const { chartID, nodes, links, handleChoose } = props;
   var simulationRef = null;
 
   const drag = (simulation) => {
@@ -43,7 +43,7 @@ function Graph(props, ref) {
     const width = 800;
     const height = 400;
 
-    const chart = d3.select('#chart');
+    const chart = d3.select('#' + chartID);
     chart.selectAll('svg').remove();
 
     const simulation = d3
@@ -57,7 +57,7 @@ function Graph(props, ref) {
       )
       .force('x', d3.forceX(height / 2))
       .force('y', d3.forceY(width / 2))
-      .force('charge', d3.forceManyBody().strength(nodes.length > 10 ? -50 : -150))
+      .force('charge', d3.forceManyBody().strength(nodes.length >= 3 ? -50 : -150))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     const svg = chart
@@ -69,7 +69,7 @@ function Graph(props, ref) {
     svg
       .append('defs')
       .append('marker')
-      .attr('id', 'arrow')
+      .attr('id', chartID + '_arrow')
       .attr('viewBox', '0 -5 10 10')
       .attr('refX', 20)
       .attr('refY', 0)
@@ -89,7 +89,7 @@ function Graph(props, ref) {
       .join('path')
       .attr('stroke', linkColor)
       .attr('stroke-width', 1)
-      .attr('marker-end', 'url(#arrow)');
+      .attr('marker-end', `url(#${chartID}_arrow)`);
 
     const node = svg
       .append('g')
@@ -106,13 +106,13 @@ function Graph(props, ref) {
       .attr('r', 5)
       .on('mouseover', (e, d) => {
         if (!d.show) {
-          d3.select(`#text_${d.id}`)
+          d3.select(`#${chartID}_text_${d.id}`)
             .text(d.name);
         }
       })
       .on('mouseout', (e, d) => {
         if (!d.show) {
-          d3.select(`#text_${d.id}`).text('');
+          d3.select(`#${chartID}_text_${d.id}`).text('');
         }
       })
       .on('click', (e, d) => {
@@ -125,7 +125,7 @@ function Graph(props, ref) {
       .append('text')
       .attr('x', 10)
       .attr('y', '0.3em')
-      .attr('id', (d) => `text_${d.id}`)
+      .attr('id', (d) => `${chartID}_text_${d.id}`)
       .text((d) => d.show ? d.name : '');
 
     simulation.on('tick', () => {
@@ -156,7 +156,7 @@ function Graph(props, ref) {
   });
 
   return (
-    <div id='chart' />
+    <div id={chartID} />
   );
 };
 
