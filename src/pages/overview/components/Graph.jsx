@@ -1,9 +1,10 @@
 import { useEffect, useImperativeHandle, forwardRef } from 'react';
-import * as d3 from 'd3'
+import * as d3 from 'd3';
 
 function Graph(props, ref) {
 
   const { chartID, nodes, links, handleChoose } = props;
+  const nodeTypes = Array.from(new Set(nodes.map(it => it.type)));
   var simulationRef = null;
 
   const drag = (simulation) => {
@@ -31,13 +32,17 @@ function Graph(props, ref) {
       .on('end', dragended);
   };
 
-  const nodeColor = (d) => {
-    return '#58D3F7';
-  };
+  const nodeColor = d3.scaleOrdinal(nodeTypes, d3.schemeCategory10);
 
   const linkColor = (d) => {
     return '#888';
   };
+
+  const manyBodyStrength = nodesLength => {
+    const x = nodesLength;
+    const y = -0.1669924987274669 * x * x + 93.95698541127945 * x - 5280.368023745291;
+    return Math.min(y, -50);
+  }
 
   const drawChart = () => {
     const width = 800;
@@ -57,7 +62,7 @@ function Graph(props, ref) {
       )
       .force('x', d3.forceX(height / 2))
       .force('y', d3.forceY(width / 2))
-      .force('charge', d3.forceManyBody().strength(nodes.length >= 3 ? -50 : -150))
+      .force('charge', d3.forceManyBody().strength(manyBodyStrength(nodes.length)))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     const svg = chart
@@ -87,9 +92,24 @@ function Graph(props, ref) {
       .selectAll('path')
       .data(links)
       .join('path')
+      .attr('id', (d, i) => `${chartID}_link_path_${i}`)
       .attr('stroke', linkColor)
       .attr('stroke-width', 1)
       .attr('marker-end', `url(#${chartID}_arrow)`);
+
+    svg
+      .append('g')
+      .selectAll('text')
+      .data(links)
+      .join('text')
+      .attr('dx', 70)
+      .attr('dy', -5)
+      .style('pointer-events', 'none')
+      .append('textPath')
+      .attr('xlink:href', (d, i) => `#${chartID}_link_path_${i}`)
+      .style("pointer-events", "none")
+      .text(d => d.show ? d.data.name : '');
+
 
     const node = svg
       .append('g')
@@ -100,24 +120,31 @@ function Graph(props, ref) {
 
     node
       .append('circle')
-      .attr('fill', nodeColor)
+      .attr('fill', d => nodeColor(d.type))
       .attr('stroke', 'white')
       .attr('stroke-width', 1.5)
       .attr('r', 5)
       .on('mouseover', (e, d) => {
         if (!d.show) {
-          d3.select(`#${chartID}_text_${d.id}`)
+          d3.select(`#${chartID}_node_text_${d.id}`)
             .text(d.name);
         }
       })
       .on('mouseout', (e, d) => {
         if (!d.show) {
-          d3.select(`#${chartID}_text_${d.id}`).text('');
+          d3.select(`#${chartID}_node_text_${d.id}`).text('');
         }
       })
       .on('click', (e, d) => {
         d.fx = d.x;
         d.fy = d.y;
+        for (let i in links) {
+          if (links[i].source.id === d.id || links[i].target.id === d.id) {
+            d3.select(`#${chartID}_link_path_${i}`).attr('stroke-width', 2)
+          } else {
+            d3.select(`#${chartID}_link_path_${i}`).attr('stroke-width', 1)
+          }
+        }
         handleChoose(d);
       });
 
@@ -125,7 +152,7 @@ function Graph(props, ref) {
       .append('text')
       .attr('x', 10)
       .attr('y', '0.3em')
-      .attr('id', (d) => `${chartID}_text_${d.id}`)
+      .attr('id', (d) => `${chartID}_node_text_${d.id}`)
       .text((d) => d.show ? d.name : '');
 
     simulation.on('tick', () => {

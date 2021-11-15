@@ -26,6 +26,7 @@ function KnowledgeGraph() {
   const [loading, setLoading] = useState(false);
   const [nodes, setNodes] = useState([]);
   const [links, setLinks] = useState([]);
+  const [currentNodeRef, setCurrentNodeRef] = useState({});
   const ref = useRef();
 
   const appendFilter = add => {
@@ -65,7 +66,7 @@ function KnowledgeGraph() {
           if (key.endsWith('id') && value.length > 1) {
             return `duplicated id at： ${key}`;
           }
-          res.set(key, value);
+          res[key] = value;
         }
       }
       return res;
@@ -82,6 +83,7 @@ function KnowledgeGraph() {
         setNodes([...res.data.nodes]);
         setLinks([...res.data.links]);
         setLoading(false);
+        console.log(res.data);
       } else {
         message.error(res.message);
         setLoading(false);
@@ -90,7 +92,15 @@ function KnowledgeGraph() {
   };
 
   const handleChoose = nodeRef => {
-
+    const { nodes: simulationNodes, links: simulationLinks } = ref.current.getDataRef();
+    setCurrentNodeRef(nodeRef);
+    for (let i in links) {
+      if (links[i].source.id === nodeRef.id || links[i].target.id === nodeRef.id) {
+        links[i].show = true;
+      } else {
+        links[i].show = false;
+      }
+    }
   };
 
   return (
