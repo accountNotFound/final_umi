@@ -1,10 +1,10 @@
 import {
-  Input, Button, Row, Col, Space, Select,
-  Form, Spin, message
+  Input, Button, Row, Col, Space, Select, Table,
+  Form, Spin, message, Tag
 } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useState, useRef } from 'react';
-import { postCypherQueries } from '../../../service/overview';
+import { postCypherQueries, getCenterQueries } from '../../../service/overview';
 import Graph from './Graph';
 
 const NODE_TYPES = [
@@ -27,6 +27,7 @@ function KnowledgeGraph() {
   const [nodes, setNodes] = useState([]);
   const [links, setLinks] = useState([]);
   const [currentNodeRef, setCurrentNodeRef] = useState({});
+  const [currentLinkRef, setCurrentLinkRef] = useState({});
   const ref = useRef();
 
   const appendFilter = add => {
@@ -83,7 +84,6 @@ function KnowledgeGraph() {
         setNodes([...res.data.nodes]);
         setLinks([...res.data.links]);
         setLoading(false);
-        console.log(res.data);
       } else {
         message.error(res.message);
         setLoading(false);
@@ -91,17 +91,170 @@ function KnowledgeGraph() {
     });
   };
 
-  const handleChoose = nodeRef => {
+  const handleChoose = (nodeRef, linkRef) => {
     const { nodes: simulationNodes, links: simulationLinks } = ref.current.getDataRef();
-    setCurrentNodeRef(nodeRef);
-    for (let i in links) {
-      if (links[i].source.id === nodeRef.id || links[i].target.id === nodeRef.id) {
-        links[i].show = true;
-      } else {
-        links[i].show = false;
-      }
+    if (nodeRef !== null) {
+      links.forEach(link => {
+        if (link.source.id === nodeRef.id || link.target.id === nodeRef.id) {
+          link.show = true;
+        } else {
+          link.show = false;
+        }
+      });
+      setCurrentNodeRef(nodeRef);
+      setCurrentLinkRef({});
+    } else {
+      links.forEach(link => link.show = false);
+      linkRef.show = true;
+      setCurrentNodeRef({});
+      setCurrentLinkRef(linkRef);
     }
   };
+
+  const handleExpand = (record, forward) => {
+    const merge = (src, extra, genKeyFunc) => {
+      let vis = new Set();
+      src.forEach(it => {
+        const k = genKeyFunc(it);
+        if (!vis.has(k)) {
+          vis.add(k);
+        }
+      });
+      let res = [...src];
+      extra.forEach(it => {
+        const k = genKeyFunc(it);
+        if (!vis.has(k)) {
+          res.push(it);
+        }
+      });
+      return res;
+    };
+    const handleResponse = res => {
+      if (res.code === 0) {
+        const { nodes: simulationNodes, links: simulationLinks } = ref.current.getDataRef();
+        setNodes([...merge(simulationNodes, res.data.nodes, it => it.id)]);
+        setLinks([...merge(simulationLinks, res.data.links, it => (it.source + it.target))]);
+      } else {
+        message.error(res.message);
+      }
+    };
+    if (record.target) {
+      postCypherQueries(
+        {
+          filterDict: {
+            head_id: forward ? [record.target.id] : [],
+            tail_id: forward ? [] : [record.source.id],
+            rel_group_id: [record.data.group_id]
+          }
+        }
+      ).then(handleResponse);
+    } else {
+      getCenterQueries(record.id).then(handleResponse)
+    }
+  };
+
+  const nodeColumn = [
+    {
+      title: '节点名',
+      dataindex: 'name',
+      key: 'name',
+      render: record => <p>{record.name}</p>
+    },
+    {
+      title: '类型',
+      dataindex: 'type',
+      key: 'type',
+      render: record => (
+        <Tag color={ref.current.getNodeColor()(record.type)}>
+          {record.type}
+        </Tag>
+      )
+    },
+    {
+      title: 'ID',
+      dataindex: 'id',
+      key: 'id',
+      render: record => <p>{record.id}</p>
+    },
+    {
+      title: '属性',
+      dataindex: 'attrs',
+      key: 'attrs',
+      render: record => (
+        <Row>
+          <Space>
+            {
+              record.attrs.slice(0, 10).map(it => (
+                <Tag color={ref.current.getNodeColor()(it.type)}>
+                  {it.name}
+                </Tag>
+              ))
+            }
+          </Space>
+        </Row>
+      )
+    },
+    {
+      title: '更多',
+      render: record => (
+        <Button type='link' onClick={() => handleExpand(record)}>
+          随机展开
+        </Button>
+      )
+    }
+  ];
+
+  const linkColumn = [
+    {
+      title: '起点',
+      dataindex: 'source',
+      key: 'source',
+      render: record => (
+        <Tag color={ref.current.getNodeColor()(record.source.type)}>
+          {record.source.name}
+        </Tag>
+      )
+    },
+    {
+      title: '关系内容',
+      dataindex: 'name',
+      key: 'name',
+      render: record => (
+        <Tag color={ref.current.getLinkColor()(record.data.type)}>
+          {record.data.name}
+        </Tag>
+      )
+    },
+    {
+      title: '终点',
+      dataindex: 'target',
+      key: 'target',
+      render: record => (
+        <Tag color={ref.current.getNodeColor()(record.target.type)}>
+          {record.target.name}
+        </Tag>
+      )
+    },
+    {
+      title: '组ID',
+      dataindex: 'group_id',
+      key: 'group_id',
+      render: record => <p>{record.data.group_id}</p>
+    },
+    {
+      title: '更多',
+      render: record => (
+        <Space>
+          <Button type='link' onClick={() => handleExpand(record, false)}>
+            展开组ID上游
+          </Button>
+          <Button type='link' onClick={() => handleExpand(record, true)}>
+            展开组ID下游
+          </Button>
+        </Space>
+      )
+    }
+  ];
 
   return (
     <>
@@ -171,14 +324,39 @@ function KnowledgeGraph() {
 
       <Row justify="center">
         {
-          loading ?
-            <Spin /> :
-            <>
-              <Col span={20}>
-                <Graph chartID='knowledge' nodes={nodes} links={links} handleChoose={handleChoose} ref={ref} />
-              </Col>
-            </>
+          loading ? <Spin /> : <></>
         }
+        <Col span={20}>
+          <>
+            {
+              currentNodeRef?.name ?
+                <Table
+                  columns={nodeColumn}
+                  dataSource={
+                    [{
+                      ...currentNodeRef,
+                      attrs: links
+                        .filter(it => it.source.id === currentNodeRef.id && it.data.type === 'attr_by')
+                        .map(it => it.target)
+                    }]
+                  }
+                  pagination={false}
+                />
+                :
+                currentLinkRef?.data ?
+                  <Table
+                    columns={linkColumn}
+                    dataSource={
+                      [currentLinkRef]
+                    }
+                    pagination={false}
+                  />
+                  : <></>
+
+            }
+          </>
+          <Graph chartID='knowledge' nodes={nodes} links={links} handleChoose={handleChoose} ref={ref} />
+        </Col>
       </Row>
     </>
   );

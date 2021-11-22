@@ -44,7 +44,10 @@ function SourceGraph() {
     });
   };
 
-  const handleChoose = nodeRef => {
+  const handleChoose = (nodeRef, linkRef) => {
+    if (nodeRef === null) {
+      return;
+    }
     const { nodes: simulationNodes } = ref.current.getDataRef();
     simulationNodes.forEach(it => {
       it.show = false;
@@ -109,7 +112,7 @@ function SourceGraph() {
               <Col span={20}>
                 <>
                   {
-                    currentNodeRef.name ?
+                    currentNodeRef?.name ?
                       <Row>
                         <Space>
                           <Tag color='geekblue'>{currentNodeRef.name}</Tag>

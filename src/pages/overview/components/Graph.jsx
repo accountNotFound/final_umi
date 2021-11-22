@@ -5,6 +5,7 @@ function Graph(props, ref) {
 
   const { chartID, nodes, links, handleChoose } = props;
   const nodeTypes = Array.from(new Set(nodes.map(it => it.type)));
+  const linkTypes = Array.from(new Set(links.map(it => it.data?.type)));
   var simulationRef = null;
 
   const drag = (simulation) => {
@@ -34,9 +35,7 @@ function Graph(props, ref) {
 
   const nodeColor = d3.scaleOrdinal(nodeTypes, d3.schemeCategory10);
 
-  const linkColor = (d) => {
-    return '#888';
-  };
+  const linkColor = d3.scaleOrdinal(linkTypes, d3.schemeCategory10);
 
   const manyBodyStrength = nodesLength => {
     const x = nodesLength;
@@ -47,6 +46,8 @@ function Graph(props, ref) {
   const drawChart = () => {
     const width = 800;
     const height = 400;
+    const lineWidth = nodes.length < 100 ? 2.5 : 1;
+    const nodeRadius = nodes.length < 100 ? 12 : 5;
 
     const chart = d3.select('#' + chartID);
     chart.selectAll('svg').remove();
@@ -82,20 +83,27 @@ function Graph(props, ref) {
       .attr('markerHeight', 5)
       .attr('orient', 'auto')
       .append('path')
-      .attr('fill', linkColor)
+      // .attr('fill', linkColor)
       .attr('d', 'M0,-5L12,0L0,5');
 
     const link = svg
       .append('g')
       .attr('fill', 'none')
-      .attr('stroke-width', 1)
+      .attr('stroke-width', lineWidth)
       .selectAll('path')
       .data(links)
       .join('path')
       .attr('id', (d, i) => `${chartID}_link_path_${i}`)
-      .attr('stroke', linkColor)
-      .attr('stroke-width', 1)
-      .attr('marker-end', `url(#${chartID}_arrow)`);
+      .attr('stroke', d => linkColor(d.data?.type))
+      .attr('stroke-width', lineWidth)
+      .attr('marker-end', `url(#${chartID}_arrow)`)
+      .on('click', (e, d) => {
+        d.source.fx = d.source.x;
+        d.source.fy = d.source.y;
+        d.target.fx = d.target.x;
+        d.target.fy = d.target.y;
+        handleChoose(null, d);
+      });
 
     svg
       .append('g')
@@ -122,8 +130,8 @@ function Graph(props, ref) {
       .append('circle')
       .attr('fill', d => nodeColor(d.type))
       .attr('stroke', 'white')
-      .attr('stroke-width', 1.5)
-      .attr('r', 5)
+      .attr('stroke-width', 1)
+      .attr('r', nodeRadius)
       .on('mouseover', (e, d) => {
         if (!d.show) {
           d3.select(`#${chartID}_node_text_${d.id}`)
@@ -140,9 +148,9 @@ function Graph(props, ref) {
         d.fy = d.y;
         for (let i in links) {
           if (links[i].source.id === d.id || links[i].target.id === d.id) {
-            d3.select(`#${chartID}_link_path_${i}`).attr('stroke-width', 2)
+            d3.select(`#${chartID}_link_path_${i}`).attr('stroke-width', lineWidth * 2)
           } else {
-            d3.select(`#${chartID}_link_path_${i}`).attr('stroke-width', 1)
+            d3.select(`#${chartID}_link_path_${i}`).attr('stroke-width', lineWidth)
           }
         }
         handleChoose(d);
@@ -178,6 +186,12 @@ function Graph(props, ref) {
     return {
       getDataRef: () => {
         return { nodes: simulationRef.nodes(), links: links };
+      },
+      getNodeColor: () => {
+        return nodeColor;
+      },
+      getLinkColor: () => {
+        return linkColor;
       }
     };
   });
