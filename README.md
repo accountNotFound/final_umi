@@ -1,6 +1,6 @@
 # final_umi
 
-基于umi++react+antd的前端实现，要运行项目，执行以下命令：
+基于umi+react+antd的前端实现，要运行项目，执行以下命令：
 ```
 yarn # 初始化依赖 
 yarn start # 以dev方式运行
