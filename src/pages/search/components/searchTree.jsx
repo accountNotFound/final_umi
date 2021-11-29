@@ -4,7 +4,8 @@ import { DownOutlined } from '@ant-design/icons';
 import { getTreeDoc } from '../../../service/search';
 
 function SearchTree(props) {
-  const { currentID, title, sourceType } = props;
+  const { currentID, sourceType } = props;
+  const [title, setTitle] = useState(props.title);
   const [metaID] = useState(currentID.split('@')[0]);
   const [rootPath, setRootPath] = useState(currentID.split('@')[1]?.split('-') || []);
   const [treeData, setTreeData] = useState([]);
@@ -46,15 +47,18 @@ function SearchTree(props) {
     const prefix = `${metaID}@${rootPath.join('-')}`;
     getTreeDoc(sourceType, prefix).then(res => {
       if (res.code === 0) {
-        const treeData_ = buildTree(res.data);
+        const treeData_ = buildTree(res.data.tree);
         setTreeData([...treeData_]);
+        if (title === null) {
+          setTitle(res.data.title);
+        }
         setLoading(false);
       } else {
         message.error(res.message);
         setLoading(false);
       }
     });
-  }, [rootPath]);
+  }, [buildTree, metaID, rootPath, sourceType, title]);
 
   const handleClick = () => {
     if (rootPath.length >= 1) {
@@ -73,7 +77,7 @@ function SearchTree(props) {
               <h2>{title}</h2>
             </Row>
             {
-              rootPath.length > 1
+              rootPath.length > 1 || rootPath.length == 1 && rootPath[0] !== ''
                 ?
                 <Button type='link' onClick={handleClick}>展开父节点</Button>
                 : <></>

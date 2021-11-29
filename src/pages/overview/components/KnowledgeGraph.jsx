@@ -2,6 +2,7 @@ import {
   Input, Button, Row, Col, Space, Select, Table,
   Form, Spin, message, Tag
 } from 'antd';
+import Link from 'umi/link';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useState, useRef } from 'react';
 import { postCypherQueries, getCenterQueries } from '../../../service/overview';
@@ -251,6 +252,18 @@ function KnowledgeGraph() {
           <Button type='link' onClick={() => handleExpand(record, true)}>
             展开组ID下游
           </Button>
+          <Link
+            to={{
+              pathname: `/search/${currentLinkRef?.data.group_id.split('*')[0]}`,
+              state: {
+                id: `${currentLinkRef?.data.group_id.split('*')[0]}`,
+                title: null,
+                sourceType: 'specif'
+              }
+            }}
+          >
+            文档详情
+          </Link>
         </Space>
       )
     }
