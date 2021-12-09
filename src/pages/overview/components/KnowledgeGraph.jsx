@@ -82,6 +82,8 @@ function KnowledgeGraph() {
     setLoading(true);
     postCypherQueries({ head, tail, filterDict }).then(res => {
       if (res.code === 0) {
+        setCurrentNodeRef({});
+        setCurrentLinkRef({});
         setNodes([...res.data.nodes]);
         setLinks([...res.data.links]);
         setLoading(false);
@@ -276,12 +278,12 @@ function KnowledgeGraph() {
           <Row gutter={24}>
             <Col span={12}>
               <Form.Item name='head'>
-                <Input placeholder='起点' />
+                <Input placeholder='节点1' />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name='tail'>
-                <Input placeholder='终点' />
+                <Input placeholder='节点2' />
               </Form.Item>
             </Col>
           </Row>

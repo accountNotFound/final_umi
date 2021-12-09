@@ -58,7 +58,7 @@ function SearchTree(props) {
         setLoading(false);
       }
     });
-  }, [buildTree, metaID, rootPath, sourceType, title]);
+  }, [rootPath]);
 
   const handleClick = () => {
     if (rootPath.length >= 1) {
