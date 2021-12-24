@@ -260,7 +260,7 @@ function KnowledgeGraph() {
               state: {
                 id: `${currentLinkRef?.data.group_id.split('*')[0]}`,
                 title: null,
-                sourceType: 'specif'
+                sourceType: currentLinkRef.data.source_type,
               }
             }}
           >
