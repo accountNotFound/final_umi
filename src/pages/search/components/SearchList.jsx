@@ -1,9 +1,9 @@
 import {
   Row, Spin, Pagination, List, Empty, message
 } from 'antd';
-import Link from 'umi/link';
+import Link from '../../../layouts/Link.jsx';
 import { useEffect, useState } from 'react';
-import { postAbsQueries } from '../../../service/search';
+import { postAbsQueries } from '../../../service/search.jsx';
 
 function SearchList(props) {
   const { formData } = props;
@@ -39,7 +39,7 @@ function SearchList(props) {
     if (formData.query_str) {
       submitQuery(formData, currentPage, pageSize);
     }
-  }, [formData]);
+  }, [currentPage, formData, pageSize]);
 
   const handlePageChange = (currentPage, pageSize) => {
     if (formData.query_str) {

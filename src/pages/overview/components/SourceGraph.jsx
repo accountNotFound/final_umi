@@ -2,10 +2,10 @@ import {
   Input, Button, Row, Col,
   Form, Spin, Space, message, Tag
 } from 'antd';
-import Link from 'umi/link';
+import Link from '../../../layouts/Link.jsx';
 import { useState, useEffect, useRef } from 'react';
-import Graph from './Graph';
-import { getTopRefs, postGraphQueries, getCenterQueries } from '../../../service/overview';
+import Graph from './Graph.jsx';
+import { getTopRefs, postGraphQueries, getCenterQueries } from '../../../service/overview.jsx';
 
 function SourceGraph() {
   const [loading, setLoading] = useState(false);

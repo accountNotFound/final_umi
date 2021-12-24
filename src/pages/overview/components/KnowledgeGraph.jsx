@@ -2,11 +2,11 @@ import {
   Input, Button, Row, Col, Space, Select, Table,
   Form, Spin, message, Tag
 } from 'antd';
-import Link from 'umi/link';
+import Link from '../../../layouts/Link.jsx';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useState, useRef } from 'react';
-import { postCypherQueries, getCenterQueries } from '../../../service/overview';
-import Graph from './Graph';
+import { postCypherQueries, getCenterQueries } from '../../../service/overview.jsx';
+import Graph from './Graph.jsx';
 
 const NODE_TYPES = [
   'attribute', 'conception', 'object', 'placeholder'

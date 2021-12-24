@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Link from 'umi/link';
+import Link from './Link.jsx';
 import { Layout, Menu, Row, Col } from 'antd';
 import {
   MenuUnfoldOutlined,

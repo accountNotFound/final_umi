@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Tree, Row, Spin, message, Button } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
-import { getTreeDoc } from '../../../service/search';
+import { getTreeDoc } from '../../../service/search.jsx';
 
 function SearchTree(props) {
   const { currentID, sourceType } = props;
@@ -58,6 +58,7 @@ function SearchTree(props) {
         setLoading(false);
       }
     });
+    // eslint-disable-next-line
   }, [rootPath]);
 
   const handleClick = () => {

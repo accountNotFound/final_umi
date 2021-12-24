@@ -3,7 +3,7 @@ import {
   Select, Space
 } from 'antd';
 import { useState } from 'react';
-import SearchList from './components/SearchList';
+import SearchList from './components/SearchList.jsx';
 
 const { Option } = Select;
 

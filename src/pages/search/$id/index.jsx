@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import {
   Row, Form, Space, Col, Input, Button
 } from 'antd';
-import SearchList from '../components/SearchList';
-import SearchTree from '../components/searchTree';
+import SearchList from '../components/SearchList.jsx';
+import SearchTree from '../components/searchTree.jsx';
 
 function SearchDetail(props) {
   const { id: currentID, title, sourceType } = props.location.state;

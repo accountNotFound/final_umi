@@ -2,8 +2,8 @@ import {
   Tabs, Spin
 } from 'antd';
 import { useState } from 'react';
-import SourceGraph from './components/SourceGraph';
-import KnowledgeGraph from './components/KnowledgeGraph';
+import SourceGraph from './components/SourceGraph.jsx';
+import KnowledgeGraph from './components/KnowledgeGraph.jsx';
 
 const { TabPane } = Tabs;
 
